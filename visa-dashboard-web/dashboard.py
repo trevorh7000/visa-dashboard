@@ -29,7 +29,7 @@ st.markdown("""
 # --- Load data with cache busted by file mtimes ---
 @st.cache_data
 def load_data(db_path, msg_path, db_mtime, msg_mtime, dash_mtime):
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(db_path) # cache buster added Tuesday Jan 27 as i pull out my hair
     df = pd.read_sql_query("SELECT app_number, decision, week, start_date, end_date FROM decisions", conn)  # CHANGED / NEW: include start_date
     conn.close()
     df = df.rename(columns={"app_number": "application_number"})
