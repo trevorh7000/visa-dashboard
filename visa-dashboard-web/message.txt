@@ -1,5 +1,5 @@
-Extracted 133 rows from SAVD-Decisions-03-February-to-09-February.pdf - Inserted 133 new records.
+Extracted 133 rows from SAVD-Decisions-03-February-to-09-February.pdf - Inserted 0 new records.
 Extracted 93 rows from SAVD-Decisions-27-January-to-02-February.pdf - Inserted 0 new records.
+Extracted 104 rows from SAVD-Decisions-10-February-to-16-February.pdf - Inserted 104 new records.
 Extracted 124 rows from SAVD-Decisions-20-January-to-26-January.pdf - Inserted 0 new records.
-Extracted 103 rows from SAVD-Decisions-13-January-to-19-January.pdf - Inserted 0 new records.
-Total new records inserted: 133
+Total new records inserted: 104
