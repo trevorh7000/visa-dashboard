@@ -122,9 +122,13 @@ def process_pdf(filepath, week_label, message_file):
 
 # === DATABASE INSERT ===
 def insert_into_db(conn, rows, week, start_date, end_date, filename, message_file):
+        
+    for _ in (conn, week, start_date, end_date, filename, message_file):
+        print(_)
     cur = conn.cursor()
     new_rows = 0
     for row in rows:
+        # print(row)
         try:
             cur.execute("""
                 INSERT OR IGNORE INTO decisions (app_number, decision, week, start_date, end_date, filename)

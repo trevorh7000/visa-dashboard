@@ -33,10 +33,16 @@ def fetch_pdf_links(base_url):
     soup = BeautifulSoup(response.text, "html.parser")
     links = soup.find_all("a", href=True)
 
+    # pdf_links = [
+    #     urljoin(base_url, a['href'])
+    #     for a in links
+    #     if a['href'].lower().endswith(".pdf") and os.path.basename(a['href']).startswith("SAVD-")
+    # ]
+
     pdf_links = [
         urljoin(base_url, a['href'])
         for a in links
-        if a['href'].lower().endswith(".pdf") and os.path.basename(a['href']).startswith("SAVD-")
+        if a['href'].lower().endswith(".pdf") 
     ]
     return pdf_links
 
@@ -84,6 +90,6 @@ def run_scraper():
 
 # === wrapping: safe entry point
 if __name__ == "__main__":
-    run_scraper()
+    print(run_scraper())
 # === end wrapping
 
