@@ -14,17 +14,23 @@ from datetime import datetime, date
 import subprocess
 
 import logging
+
 logger = logging.getLogger(__name__)
+
 
 # === wrapping: moved global setup into a function
 def setup():
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    to_process_dir = os.path.abspath(os.path.join(script_dir, "..", "data", "pdf", "to_process"))
-    processed_dir = os.path.abspath(os.path.join(script_dir, "..", "data", "pdf", "processed"))
-    app_path = os.path.join(script_dir, "..", "visa-dashboard-web") 
+    to_process_dir = os.path.abspath(
+        os.path.join(script_dir, "..", "data", "pdf", "to_process")
+    )
+    processed_dir = os.path.abspath(
+        os.path.join(script_dir, "..", "data", "pdf", "processed")
+    )
+    app_path = os.path.join(script_dir, "..", "visa-dashboard-web")
     db_path = os.path.join(app_path, "decisions.db")
     message_file = os.path.join(app_path, "message.txt")
-    
+
     os.makedirs(to_process_dir, exist_ok=True)
     os.makedirs(processed_dir, exist_ok=True)
 
@@ -33,6 +39,8 @@ def setup():
         pass
 
     return to_process_dir, processed_dir, app_path, db_path, message_file
+
+
 # === end wrapping
 
 
@@ -41,11 +49,13 @@ def write_message(message, message_file):
     with open(message_file, "a") as f:
         f.write(message)
 
+
 # === DATABASE SETUP ===
 def init_db(db_path):
     conn = sqlite3.connect(db_path)
     cur = conn.cursor()
-    cur.execute("""
+    cur.execute(
+        """
         CREATE TABLE IF NOT EXISTS decisions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             app_number TEXT NOT NULL,
@@ -57,7 +67,8 @@ def init_db(db_path):
             date_added TEXT DEFAULT CURRENT_TIMESTAMP,
             UNIQUE(app_number, week)
         )
-    """)
+    """
+    )
     conn.commit()
     return conn
 
@@ -68,18 +79,26 @@ def extract_week_label(filename, today=None):
         today = date.today()
 
     # With year explicitly in the filename
-    match_with_year = re.search(r"SAVD-Decisions-(\d{1,2})-([A-Za-z]+)-to-(\d{1,2})-([A-Za-z]+)-(\d{4})", filename)
+    match_with_year = re.search(
+        r"SAVD-Decisions-(\d{1,2})-([A-Za-z]+)-to-(\d{1,2})-([A-Za-z]+)-(\d{4})",
+        filename,
+    )
     if match_with_year:
         d1, m1, d2, m2, y = match_with_year.groups()
         start_date = datetime.strptime(f"{d1}-{m1}-{y}", "%d-%B-%Y").date()
         end_date = datetime.strptime(f"{d2}-{m2}-{y}", "%d-%B-%Y").date()
-        week_label = f"{start_date.strftime('%d %b')} to {end_date.strftime('%d %b %Y')}"
+        week_label = (
+            f"{start_date.strftime('%d %b')} to {end_date.strftime('%d %b %Y')}"
+        )
         return week_label, start_date, end_date
 
     # Without year in the filename — infer the year
-    match_without_year = re.search(r"SAVD-Decisions-(\d{1,2})-([A-Za-z]+)-to-(\d{1,2})-([A-Za-z]+)", filename)
-    if match_without_year:
-        d1, m1, d2, m2 = match_without_year.groups()
+    # match_without_year = re.search(
+    #     r"SAVD-Decisions-(\d{1,2})-([A-Za-z]+)-to-(\d{1,2})-([A-Za-z]+)", filename
+    # )
+    match = re.search(r"(\d{1,2})-([A-Za-z]+)-to-(\d{1,2})-([A-Za-z]+)", filename)
+    if match:
+        d1, m1, d2, m2 = match.groups()
 
         try:
             end_try = datetime.strptime(f"{d2}-{m2}-{today.year}", "%d-%B-%Y").date()
@@ -97,12 +116,16 @@ def extract_week_label(filename, today=None):
         if end_date < start_date:
             end_date = end_date.replace(year=year + 1)
 
-        week_label = f"{start_date.strftime('%d %b')} to {end_date.strftime('%d %b %Y')}"
-        return  week_label, start_date, end_date
+        week_label = (
+            f"{start_date.strftime('%d %b')} to {end_date.strftime('%d %b %Y')}"
+        )
+        return week_label, start_date, end_date
     return None, None, "Unknown-Week"
+
 
 # === PDF PARSING ===
 def process_pdf(filepath, week_label, message_file):
+    print(f"Extracting data from {os.path.basename(filepath)} for week: {week_label}")
     rows = []
     with pdfplumber.open(filepath) as pdf:
         for page_number, page in enumerate(pdf.pages, start=1):
@@ -120,9 +143,10 @@ def process_pdf(filepath, week_label, message_file):
     write_message(text_to_go, message_file)
     return rows
 
+
 # === DATABASE INSERT ===
 def insert_into_db(conn, rows, week, start_date, end_date, filename, message_file):
-        
+
     for _ in (conn, week, start_date, end_date, filename, message_file):
         print(_)
     cur = conn.cursor()
@@ -130,10 +154,13 @@ def insert_into_db(conn, rows, week, start_date, end_date, filename, message_fil
     for row in rows:
         # print(row)
         try:
-            cur.execute("""
+            cur.execute(
+                """
                 INSERT OR IGNORE INTO decisions (app_number, decision, week, start_date, end_date, filename)
                 VALUES (?, ?, ?, ?, ?, ?)
-            """, (row[0], row[1], week, start_date, end_date, filename))
+            """,
+                (row[0], row[1], week, start_date, end_date, filename),
+            )
             if cur.rowcount > 0:
                 new_rows += 1
         except Exception as e:
@@ -141,8 +168,9 @@ def insert_into_db(conn, rows, week, start_date, end_date, filename, message_fil
     conn.commit()
     text_to_go = f"Inserted {new_rows} new records."
     print(text_to_go)
-    write_message(' - ' + text_to_go + '\n', message_file)
+    write_message(" - " + text_to_go + "\n", message_file)
     return new_rows
+
 
 # === STREAMLIT UPDATE ROUTINE ===
 def update_dashboard(app_path):
@@ -160,6 +188,7 @@ def update_dashboard(app_path):
 
     print("✅ Updated dashboard.py with new cache-bust comment.")
     logger.info("Updated dashboard.py with new cache-bust comment.")
+
 
 # === GIT COMMIT & PUSH ===
 # === GIT COMMIT & PUSH ===
@@ -179,9 +208,11 @@ def commit_and_push_updates(app_path):
         print("❌ Git operation failed:", e)
         logger.error(f"Git operation failed: {e}")
 
+
 def update_streamlit_data(app_path):
     update_dashboard(app_path)
     commit_and_push_updates(app_path)
+
 
 # === wrapping: clean entry point function
 def run_processor():
@@ -200,7 +231,14 @@ def run_processor():
         print(f"\nProcessing {filename}")
         week_label, start_date, end_date = extract_week_label(filename)
         rows = process_pdf(filepath, week_label, message_file)
-        inserted_rows = insert_into_db(conn, rows, week_label, start_date, end_date, filename, message_file)
+        print(rows)  # perfect prints the rows
+        print("\n\n\n")
+        print(conn, rows, week_label, start_date, end_date, filename, message_file)
+        print("\n\n\nFUCKING ENDPOINT")
+
+        inserted_rows = insert_into_db(
+            conn, rows, week_label, start_date, end_date, filename, message_file
+        )
         total_new_rows += inserted_rows
 
         dest_path = os.path.join(processed_dir, filename)
@@ -220,12 +258,13 @@ def run_processor():
         print("No new records inserted.")
         logger.info("No new records inserted.")
 
-    
     return total_new_rows
+
+
 # === end wrapping
 
 # === safe CLI entry
 if __name__ == "__main__":
-    print ("Starting processor script...",datetime.now().isoformat())
+    print("Starting processor script...", datetime.now().isoformat())
     run_processor()
 # === end wrapping
