@@ -1,6 +1,6 @@
-Extracted 156 rows from SAVO-Decisions-14-April-to-20-April.pdf - Inserted 156 new records.
+Extracted 156 rows from SAVO-Decisions-14-April-to-20-April.pdf - Inserted 0 new records.
 Extracted 155 rows from SAVO-Decisions-24-March-to-30-March.pdf - Inserted 0 new records.
 Extracted 162 rows from SAVO-Decisions-07-April-to-13-April.pdf - Inserted 0 new records.
 Extracted 219 rows from SAVO-Decisions-31-March-to-06-April.pdf - Inserted 0 new records.
 Extracted 11 rows from 2026-office-closure-dates.pdf - Inserted 0 new records.
-Total new records inserted: 156
+No new records inserted.
