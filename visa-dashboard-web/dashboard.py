@@ -196,6 +196,16 @@ def main():
             Compiled by <a href="https://businessirelandsouthafrica.co.za/" target="_blank">Business Ireland South Africa</a>
         </div>
         """, unsafe_allow_html=True)
+        # adding in warning text about the data no longer avaialable - Wed 10 June 2026
+        # they announced from 1 June to use their onlin elook up and the pdf for SA is not given
+        st.markdown(
+            "</br>"
+            "<p style='text-align: center; color: red; font-weight: bold; font-size: 24px;'>"
+            "From 1 June data is no longer avaialable separately for South Africa. Decisions have " \
+            "been released together with other regions" \
+            "</p>",
+            unsafe_allow_html=True
+)
 
     if df.empty:
         st.warning("No data found in database.")
